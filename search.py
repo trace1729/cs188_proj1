@@ -89,22 +89,26 @@ def depthFirstSearch(problem):
     # state [next_state, action, cost]
     actions = []
     fringe = util.Stack()
+    visited_state = set()
+    visited_state.add(problem.getStartState())
     print("Start's successors:", problem.getSuccessors(problem.getStartState()))
     # fringe.push(problem.getStartState())
     for n in problem.getSuccessors(problem.getStartState()):
         fringe.push(n)
-    print(fringe)
     cnt = 0
     while not fringe.isEmpty():
         cnt += 1
         serNode = fringe.pop()
-        print(serNode)
+        visited_state.add(serNode)
         actions.append(serNode[1])
-        if cnt >= 10 or problem.isGoalState(serNode[0]):
+        if cnt >= 20 or problem.isGoalState(serNode[0]):
             break        
         for n in problem.getSuccessors(serNode[0]):
-            fringe.push(n)
-        print(actions)
+            if n not in visited_state:
+                print(n, end=" ")
+                fringe.push(n)
+        print()
+        # print(actions)
             
     return actions
     
