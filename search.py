@@ -73,11 +73,12 @@ def tinyMazeSearch(problem):
     w = Directions.WEST
     return  [s, s, w, s, w, w, s, w]
 class serNode:
-    def __init__(self, prior, pos, action, expense=0) -> None:
+    def __init__(self, prior, pos, action, expense=0,cost=0) -> None:
         self.prior = prior
         self.pos = pos
         self.action = action
         self.expense = expense
+        self.cost = cost
     
     def getPrior(self):
         return self.prior
@@ -90,7 +91,11 @@ class serNode:
             
     def getExpense(self):
         return self.expense
+
+    def getF(self):
+        return self.cost
     
+
             
 def depthFirstSearch(problem):
     """
@@ -116,7 +121,7 @@ def depthFirstSearch(problem):
     while not fringe.isEmpty():
         top = fringe.pop()
         assert isinstance(top, serNode)
-        visited_state.add((top.getPos(), top.getAction(), top.getExpense()))
+        visited_state.add(top.getPos())
         
         if problem.isGoalState(top.getPos()):
             while top.getPos() != problem.getStartState():
@@ -125,7 +130,7 @@ def depthFirstSearch(problem):
             break        
         
         for n in problem.getSuccessors(top.getPos()):
-            if n not in visited_state:
+            if n[0] not in visited_state:
                 fringe.push(serNode(top, n[0], n[1], n[2]))
         
     print(len(actions))
@@ -135,16 +140,16 @@ def depthFirstSearch(problem):
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
     "*** YOUR CODE HERE ***"
+    
     actions = []  # 操作序列
     fringe = util.Queue() 
     visited_state = set() # 已经展开的状态
-    
     fringe.push(serNode(any, problem.getStartState(), any, 0))
         
     while not fringe.isEmpty():
         top = fringe.pop()
         assert isinstance(top, serNode)
-        visited_state.add((top.getPos(), top.getAction(), top.getExpense()))
+        visited_state.add(top.getPos())
         
         if problem.isGoalState(top.getPos()):
             while top.getPos() != problem.getStartState():
@@ -153,14 +158,35 @@ def breadthFirstSearch(problem):
             break        
         
         for n in problem.getSuccessors(top.getPos()):
-            if n not in visited_state:
+            if n[0] not in visited_state:
                 fringe.push(serNode(top, n[0], n[1], n[2]))
             
     return list(reversed(actions))
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
-    "*** YOUR CODE HERE ***"
+    actions = []  # 操作序列
+    fringe = util.PriorityQueue() 
+    visited_state = set() # 已经展开的状态
+    fringe.push(serNode(any, problem.getStartState(), any, 0), 0)
+        
+    while not fringe.isEmpty():
+        top = fringe.pop()
+        assert isinstance(top, serNode)
+        visited_state.add(top.getPos())
+        
+        if problem.isGoalState(top.getPos()):
+            while top.getPos() != problem.getStartState():
+                actions.append(top.getAction())
+                top = top.getPrior()
+            break        
+        
+        for n in problem.getSuccessors(top.getPos()):
+            if n[0] not in visited_state:
+                fringe.push(serNode(top, n[0], n[1], n[2]), n[2])
+            
+    return list(reversed(actions))
+
     
 
 def nullHeuristic(state, problem=None):
@@ -172,8 +198,31 @@ def nullHeuristic(state, problem=None):
 
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    
+    actions = []  # 操作序列
+    fringe = util.PriorityQueue() 
+    visited_state = set() # 已经展开的状态
+    fringe.push(serNode(any, problem.getStartState(), any), 0)
+        
+    while not fringe.isEmpty():
+        top = fringe.pop()
+        assert isinstance(top, serNode)
+        visited_state.add(top.getPos())
+        
+        if problem.isGoalState(top.getPos()):
+            while top.getPos() != problem.getStartState():
+                actions.append(top.getAction())
+                top = top.getPrior()
+            break        
+        
+        for n in problem.getSuccessors(top.getPos()):
+            if n[0] not in visited_state:
+                fringe.push(serNode(top, n[0], n[1], n[2], top.getF() + n[2]), 
+                            top.getF() + n[2] + heuristic(n[0], problem))
+            
+    return list(reversed(actions))
+
+   
 
 
 # Abbreviations
