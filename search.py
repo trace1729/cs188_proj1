@@ -17,6 +17,7 @@ In search.py, you will implement generic search algorithms which are called by
 Pacman agents (in searchAgents.py).
 """
 
+from calendar import prmonth
 import util
 
 class SearchProblem:
@@ -71,7 +72,26 @@ def tinyMazeSearch(problem):
     s = Directions.SOUTH
     w = Directions.WEST
     return  [s, s, w, s, w, w, s, w]
-
+class serNode:
+    def __init__(self, prior, pos, action, expense=0) -> None:
+        self.prior = prior
+        self.pos = pos
+        self.action = action
+        self.expense = expense
+    
+    def getPrior(self):
+        return self.prior
+   
+    def getPos(self):
+        return self.pos
+  
+    def getAction(self):
+        return self.action
+            
+    def getExpense(self):
+        return self.expense
+    
+            
 def depthFirstSearch(problem):
     """
     Search the deepest nodes in the search tree first.
@@ -86,42 +106,62 @@ def depthFirstSearch(problem):
     print("Is the start a goal?", problem.isGoalState(problem.getStartState()))
     print("Start's successors:", problem.getSuccessors(problem.getStartState()))
     """
-    # state [next_state, action, cost]
-    actions = []
-    fringe = util.Stack()
-    visited_state = set()
-    visited_state.add(problem.getStartState())
-    print("Start's successors:", problem.getSuccessors(problem.getStartState()))
-    # fringe.push(problem.getStartState())
-    for n in problem.getSuccessors(problem.getStartState()):
-        fringe.push(n)
-    cnt = 0
+    
+    actions = []  # 操作序列
+    fringe = util.Stack() 
+    visited_state = set() # 已经展开的状态
+    
+    fringe.push(serNode(any, problem.getStartState(), any, 0))
+        
     while not fringe.isEmpty():
-        cnt += 1
-        serNode = fringe.pop()
-        visited_state.add(serNode)
-        actions.append(serNode[1])
-        if cnt >= 20 or problem.isGoalState(serNode[0]):
+        top = fringe.pop()
+        assert isinstance(top, serNode)
+        visited_state.add((top.getPos(), top.getAction(), top.getExpense()))
+        
+        if problem.isGoalState(top.getPos()):
+            while top.getPos() != problem.getStartState():
+                actions.append(top.getAction())
+                top = top.getPrior()
             break        
-        for n in problem.getSuccessors(serNode[0]):
+        
+        for n in problem.getSuccessors(top.getPos()):
             if n not in visited_state:
-                print(n, end=" ")
-                fringe.push(n)
-        print()
-        # print(actions)
-            
-    return actions
+                fringe.push(serNode(top, n[0], n[1], n[2]))
+        
+    print(len(actions))
+    return list(reversed(actions))
     
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    actions = []  # 操作序列
+    fringe = util.Queue() 
+    visited_state = set() # 已经展开的状态
+    
+    fringe.push(serNode(any, problem.getStartState(), any, 0))
+        
+    while not fringe.isEmpty():
+        top = fringe.pop()
+        assert isinstance(top, serNode)
+        visited_state.add((top.getPos(), top.getAction(), top.getExpense()))
+        
+        if problem.isGoalState(top.getPos()):
+            while top.getPos() != problem.getStartState():
+                actions.append(top.getAction())
+                top = top.getPrior()
+            break        
+        
+        for n in problem.getSuccessors(top.getPos()):
+            if n not in visited_state:
+                fringe.push(serNode(top, n[0], n[1], n[2]))
+            
+    return list(reversed(actions))
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    
 
 def nullHeuristic(state, problem=None):
     """
