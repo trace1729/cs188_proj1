@@ -18,7 +18,9 @@ Pacman agents (in searchAgents.py).
 """
 
 from calendar import prmonth
+import imp
 from os import access
+from typing import List
 import util
 
 class SearchProblem:
@@ -80,6 +82,9 @@ class serNode:
         self.action = action
         self.expense = expense
         self.cost = cost
+        
+    def __str__(self) -> str:
+        return "pos = {0}, action = {1}".format(self.pos, self.action)
     
     def getPrior(self):
         return self.prior
@@ -137,51 +142,24 @@ def depthFirstSearch(problem):
     return list(reversed(actions))
     
 
-# def breadthFirstSearch(problem):
-#     """Search the shallowest nodes in the search tree first."""
-#     "*** YOUR CODE HERE ***"
-#     class Node:
-#         def __init__(self, state, pred, action, priority=0):
-#             self.state = state
-#             self.pred = pred
-#             self.action = action
-#             self.priority = priority
-#         def __repr__(self):
-#             return "State: {0}, Action: {1}".format(self.state, self.action)
-#     closed = set()
-#     fringe = util.Queue()
-#     fringe.push(Node(problem.getStartState(), None, None))
-#     while fringe.isEmpty() is not True:
-#         node = fringe.pop()
-#         if problem.isGoalState(node.state) is True:
-#             actions = list()
-#             while node.action is not None:
-#                 actions.append(node.action)
-#                 node = node.pred
-#             actions.reverse()
-#             return actions
-#         if node.state not in closed:
-#             closed.add(node.state)
-#             for s in problem.getSuccessors(node.state):
-#                 fringe.push(Node(s[0], node, s[1]))
-#     return list()
-
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
     "*** YOUR CODE HERE ***"
-    
+
+    def print_path(path:List):
+        [print(i) for i in path]
+        
     actions = []  # 操作序列
     fringe = util.Queue() 
     visited_state = set() # 已经展开的状态
-    
-    fringe.push(serNode(any, problem.getStartState(), any, 0))
-        
+    fringe.push(serNode(None, problem.getStartState(), None))
     while not fringe.isEmpty():
         top = fringe.pop()
+        
         assert isinstance(top, serNode)
         
         if problem.isGoalState(top.pos):
-            while top.pos != problem.getStartState():
+            while top.action != None:
                 actions.append(top.action)
                 top = top.prior
             break        
@@ -190,7 +168,9 @@ def breadthFirstSearch(problem):
             visited_state.add(top.pos)
             for n in problem.getSuccessors(top.pos):
                 fringe.push(serNode(top, n[0], n[1]))
-        
+    
+    print_path(list(reversed(actions)))
+    
     return list(reversed(actions))
    
 def uniformCostSearch(problem):

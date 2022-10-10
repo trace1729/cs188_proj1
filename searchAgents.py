@@ -1,4 +1,4 @@
-# searchAgents.py
+
 # ---------------
 # Licensing Information:  You are free to use or extend these projects for
 # educational purposes provided that (1) you do not distribute or publish
@@ -34,6 +34,9 @@ description for details.
 Good luck and happy searching!
 """
 
+import re
+from typing import Dict, List, Tuple
+from xmlrpc.client import Boolean
 from game import Directions
 from game import Agent
 from game import Actions
@@ -266,13 +269,42 @@ def euclideanHeuristic(position, problem, info={}):
 # This portion is incomplete.  Time to write code!  #
 #####################################################
 
+class searchState:
+    
+    def __init__(self, state, corners: Tuple, visited: List) -> None:
+        self.stat = state
+        self.visited = visited
+        self.map = self.do_zip(corners, visited) 
+    
+    def __repr__(self) -> str:
+        return "{0}{1}".format(self.stat, self.visited)
+    
+    def __eq__(self, __o) -> bool:
+        return isinstance(__o, searchState) and self.stat == __o.stat \
+            and self.visited == __o.visited
+    
+    def __hash__(self) -> int:
+        return hash((self.stat, self.visited[0],
+                    self.visited[1], self.visited[2], self.visited[3]))
+    
+    def do_zip(self, corners: Tuple, visited: List)-> Dict:
+        dic = {}
+        for i, j in zip(corners, visited):
+            dic[i] = j
+        return dic
+    
+    def isVisitedAll(self) -> Boolean:
+        assert isinstance(self.map, Dict)
+        return all(list(self.map.values()))
+    
 class CornersProblem(search.SearchProblem):
     """
     This search problem finds paths through all four corners of a layout.
 
     You must select a suitable state space and successor function
     """
-
+    
+        
     def __init__(self, startingGameState):
         """
         Stores the walls, pacman's starting position and corners.
@@ -287,22 +319,22 @@ class CornersProblem(search.SearchProblem):
         self._expanded = 0 # DO NOT CHANGE; Number of search nodes expanded
         # Please add any code here which you would like to use
         # in initializing the problem
-        "*** YOUR CODE HERE ***"
+        # self.searchState = searchState(self.startingPosition, self.corners)
 
     def getStartState(self):
         """
         Returns the start state (in your state space, not the full Pacman state
         space)
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return searchState(self.startingPosition, self.corners, [False] * 4)
 
     def isGoalState(self, state):
         """
         Returns whether this search state is a goal state of the problem.
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        assert isinstance(state, searchState)
+        return state.isVisitedAll()
+            
 
     def getSuccessors(self, state):
         """
@@ -314,17 +346,24 @@ class CornersProblem(search.SearchProblem):
             state, 'action' is the action required to get there, and 'stepCost'
             is the incremental cost of expanding to that successor
         """
-
+        
+        assert isinstance(state, searchState)
+        
         successors = []
         for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
             # Add a successor state to the successor list if the action is legal
             # Here's a code snippet for figuring out whether a new position hits a wall:
-            #   x,y = currentPosition
-            #   dx, dy = Actions.directionToVector(action)
-            #   nextx, nexty = int(x + dx), int(y + dy)
-            #   hitsWall = self.walls[nextx][nexty]
-
-            "*** YOUR CODE HERE ***"
+            x,y = state.stat
+            dx, dy = Actions.directionToVector(action)
+            nextx, nexty = int(x + dx), int(y + dy)
+            hitsWall = self.walls[nextx][nexty]
+            if not hitsWall:
+                visited_List = list(state.map.values())
+                for i, c in enumerate(self.corners):
+                    visited_List[i] = ((nextx, nexty) == c or visited_List[i])
+                successor = searchState((nextx, nexty), self.corners, visited_List)
+                successors.append((successor, action, 1))
+            
 
         self._expanded += 1 # DO NOT CHANGE
         return successors
