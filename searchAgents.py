@@ -563,7 +563,7 @@ class ClosestDotSearchAgent(SearchAgent):
         problem = AnyFoodSearchProblem(gameState)
         "*** YOUR CODE HERE ***"
         
-        return self.searchFunction(problem)
+        return search.bfs(problem)
 
 class AnyFoodSearchProblem(PositionSearchProblem):
     """
@@ -593,22 +593,18 @@ class AnyFoodSearchProblem(PositionSearchProblem):
         self.startState = gameState.getPacmanPosition()
         self.costFn = lambda x: 1
         self._visited, self._visitedlist, self._expanded = {}, [], 0 # DO NOT CHANGE
-        self.goal = self.findGoal(self.food.asList())      
+        # self.goal = self.findGoal(self.food.asList())      
     
-    def dd(self, p1, p2):
-        x1, y1 = p1
-        x2, y2 = p2
-        return abs(x1 - x2) + abs(y1 - y2)
      
-    def findGoal(self, food: List): 
-        m_distance = mazeDistance(self.startState, food[0], self.gameState)
-        goal = food[0]
-        for f in food:
-            if m_distance > mazeDistance(self.startState, f, self.gameState):
-                m_distance = mazeDistance(self.startState, f, self.gameState)
-                goal = f
-        print(goal)
-        return goal
+    # def findGoal(self, food: List): 
+    #     m_distance = mazeDistance(self.startState, food[0], self.gameState)
+    #     goal = food[0]
+    #     for f in food:
+    #         if m_distance > mazeDistance(self.startState, f, self.gameState):
+    #             m_distance = mazeDistance(self.startState, f, self.gameState)
+    #             goal = f
+    #     print(goal)
+    #     return goal
 
     def isGoalState(self, state):
         """
@@ -618,7 +614,7 @@ class AnyFoodSearchProblem(PositionSearchProblem):
         x,y = state
         
         "*** YOUR CODE HERE ***"
-        return (x, y) == self.goal
+        return self.food[x][y]
     
 
 def mazeDistance(point1, point2, gameState):
