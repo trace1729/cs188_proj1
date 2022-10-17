@@ -169,8 +169,6 @@ def breadthFirstSearch(problem):
             for n in problem.getSuccessors(top.pos):
                 fringe.push(serNode(top, n[0], n[1]))
     
-    print_path(list(reversed(actions)))
-    
     return list(reversed(actions))
    
 def uniformCostSearch(problem):
